@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class RecipeIngredient
+public class IngredientRequirement
 {
     public string ingredientName;
     public float amountRequired;
@@ -12,12 +12,17 @@ public class RecipeIngredient
 public class DrinkRecipe
 {
     public string name;
-    public List<RecipeIngredient> ingredients;
+    public List<IngredientRequirement> ingredients;
 }
 
 public class GameDirector : MonoBehaviour
 {
     public static GameDirector Instance { get; private set; }
+
+    public List<DrinkRecipe> recipes;
+    public int currentRecipeIndex = 0;
+
+    public Dictionary<string, float> ingredientVolumes = new Dictionary<string, float>();
 
     void Awake()
     {
@@ -30,35 +35,31 @@ public class GameDirector : MonoBehaviour
         Instance = this;
     }
 
-    public List<DrinkRecipe> recipes;
-    public int currentRecipeIndex = 0;
-
     public DrinkRecipe CurrentRecipe => recipes[currentRecipeIndex];
 
-    public void CheckGlassContents(float spriteVolume, float bruisVolume)
+    public void AddIngredient(string tag, float amount)
+    {
+        tag = tag.ToLower();
+
+        if (!ingredientVolumes.ContainsKey(tag))
+            ingredientVolumes[tag] = 0f;
+
+        ingredientVolumes[tag] += amount;
+    }
+
+    public void CheckGlassContents(Dictionary<string, float> actualVolumes)
     {
         DrinkRecipe recipe = CurrentRecipe;
-
         bool allCorrect = true;
+
+        Debug.Log($"🔍 Recept: {recipe.name}");
 
         foreach (var ingredient in recipe.ingredients)
         {
-            float actualVolume = 0f;
+            actualVolumes.TryGetValue(ingredient.ingredientName.ToLower(), out float actualVolume);
+            float difference = Mathf.Abs(actualVolume - ingredient.amountRequired);
 
-            switch (ingredient.ingredientName.ToLower())
-            {
-                case "sprite":
-                    actualVolume = spriteVolume;
-                    break;
-                case "bruis":
-                    actualVolume = bruisVolume;
-                    break;
-                default:
-                    Debug.LogWarning("Onbekend ingrediënt: " + ingredient.ingredientName);
-                    break;
-            }
-
-            if (Mathf.Abs(actualVolume - ingredient.amountRequired) > 0.1f)
+            if (difference > 0.1f)
             {
                 Debug.Log($"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume}");
                 allCorrect = false;
@@ -71,23 +72,28 @@ public class GameDirector : MonoBehaviour
 
         if (allCorrect)
         {
-            Debug.Log("🎉 Juiste drank gemaakt: " + recipe.name);
+            Debug.Log("🎉 Juiste drank gemaakt!");
             GoToNextRecipe();
         }
+        else
+        {
+            Debug.Log("⚠️ Fout recept! Probeer opnieuw.");
+        }
+
+        ResetIngredients(); // klaar voor volgende poging
     }
 
     public void GoToNextRecipe()
     {
         currentRecipeIndex++;
-
         if (currentRecipeIndex >= recipes.Count)
-        {
-            Debug.Log("✅ Alle recepten afgewerkt!");
-            currentRecipeIndex = 0; // Of stop hier als gewenst
-        }
-        else
-        {
-            Debug.Log("Volgend recept: " + CurrentRecipe.name);
-        }
+            currentRecipeIndex = 0;
+
+        Debug.Log("➡️ Volgend recept: " + CurrentRecipe.name);
+    }
+
+    public void ResetIngredients()
+    {
+        ingredientVolumes.Clear();
     }
 }
