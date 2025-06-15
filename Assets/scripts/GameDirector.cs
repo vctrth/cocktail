@@ -22,6 +22,7 @@ public class GameDirector : MonoBehaviour
     public static GameDirector Instance { get; private set; }
 
     public TextMeshProUGUI feedbackText;
+    public TextMeshProUGUI checkText;
 
     public List<DrinkRecipe> recipes;
     public int currentRecipeIndex = 0;
@@ -112,7 +113,7 @@ public class GameDirector : MonoBehaviour
             feedback += "\n⚠️ Fout recept! Probeer opnieuw.";
         }
 
-        feedbackText.text = feedback;
+        checkText.text = feedback;
     }
 
     public Dictionary<string, float> GetLiquidVolumes()
@@ -132,6 +133,38 @@ public class GameDirector : MonoBehaviour
             currentRecipeIndex = 0;
 
         // Reset de ingredienten voor het volgende recept
+        liquidVolumes.Clear();
+        solidCounts.Clear();
+    }
+
+    public void SelectRecipe(int recipeIndex)
+    {
+        if (recipeIndex >= 0 && recipeIndex < recipes.Count)
+        {
+            currentRecipeIndex = recipeIndex;
+            string ingredientList = $"📋 Geselecteerd recept: {CurrentRecipe.name}\n\n";
+            foreach (var ingredient in CurrentRecipe.ingredients)
+            {
+                if (ingredient.isSolid)
+                    ingredientList += $"🔹 {ingredient.ingredientName}: {ingredient.amountRequired}x (vast)\n";
+                else
+                    ingredientList += $"🔹 {ingredient.ingredientName}: {ingredient.amountRequired}L (vloeibaar)\n";
+            }
+
+            feedbackText.text = ingredientList;
+
+            // Reset de inhoud van het glas
+            liquidVolumes.Clear();
+            solidCounts.Clear();
+        }
+        else
+        {
+            Debug.LogWarning($"⚠️ Ongeldige recipe index: {recipeIndex}");
+        }
+    }
+
+    public void ResetGlass()
+    {
         liquidVolumes.Clear();
         solidCounts.Clear();
     }

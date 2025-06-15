@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class glass_debug : MonoBehaviour
 {
-    public TextMeshPro textMesh;
+    public TextMeshProUGUI textMesh;
 
     void Update()
     {
