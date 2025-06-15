@@ -35130,7 +35130,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 606554092}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-<<<<<<< HEAD
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -35268,8 +35267,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
-=======
->>>>>>> bottles
 --- !u!1 &963921387
 GameObject:
   m_ObjectHideFlags: 0
@@ -62816,11 +62813,8 @@ SceneRoots:
   - {fileID: 788015299}
   - {fileID: 496009661}
   - {fileID: 810127186}
-<<<<<<< HEAD
   - {fileID: 1317956176}
   - {fileID: 2084316133}
   - {fileID: 1634983360}
   - {fileID: 388954840}
-=======
   - {fileID: 1439057196}
->>>>>>> bottles
