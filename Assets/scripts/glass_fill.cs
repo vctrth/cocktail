@@ -19,27 +19,18 @@ public class glass_fill : MonoBehaviour
 
         if (other.CompareTag("Liquid"))
         {
+            string ingredientTag = other.tag.ToLower();
             float added = fillSpeed * Time.deltaTime;
 
-            if (other.name.ToLower().Contains("sprite"))
-            {
-                spriteVolume += added;
-            }
-            else if (other.name.ToLower().Contains("bruis"))
-            {
-                bruisVolume += added;
-            }
-
+            GameDirector.Instance.AddIngredient(ingredientTag, added);
             currentFill += added;
+
             UpdateLiquidLevel();
 
-            // Check recept als glas vol zit
             if (currentFill >= maxFill)
             {
                 alreadyChecked = true;
-
-                // Stuur volumes naar GameDirector
-                GameDirector.Instance.CheckGlassContents(spriteVolume, bruisVolume);
+                GameDirector.Instance.CheckGlassContents(GameDirector.Instance.ingredientVolumes);
             }
         }
     }
