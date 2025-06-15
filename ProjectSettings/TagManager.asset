@@ -9,6 +9,9 @@ TagManager:
   - Liquid
   - sprite
   - bruis_water
+  - ice
+  - lime
+  - mint
   layers:
   - Default
   - TransparentFX

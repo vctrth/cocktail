@@ -7,6 +7,7 @@ public class IngredientRequirement
 {
     public string ingredientName;
     public float amountRequired;
+    public bool isSolid; // Toevoegen om aan te geven of het een vast ingrediënt is
 }
 
 [System.Serializable]
@@ -25,7 +26,8 @@ public class GameDirector : MonoBehaviour
     public List<DrinkRecipe> recipes;
     public int currentRecipeIndex = 0;
 
-    private float roundedVolumes = 0.0f; // For rounding the actual volume to 1 decimal place
+    private Dictionary<string, float> liquidVolumes = new Dictionary<string, float>();
+    private Dictionary<string, int> solidCounts = new Dictionary<string, int>();
 
     void Awake()
     {
@@ -40,7 +42,23 @@ public class GameDirector : MonoBehaviour
 
     public DrinkRecipe CurrentRecipe => recipes[currentRecipeIndex];
 
-    public void CheckGlassContents(Dictionary<string, float> actualVolumes)
+    public void AddIngredient(string ingredientName, float amount, bool isSolid = false)
+    {
+        if (isSolid)
+        {
+            if (!solidCounts.ContainsKey(ingredientName))
+                solidCounts[ingredientName] = 0;
+            solidCounts[ingredientName] += (int)amount; // Voor vaste ingrediënten is amount het aantal
+        }
+        else
+        {
+            if (!liquidVolumes.ContainsKey(ingredientName))
+                liquidVolumes[ingredientName] = 0f;
+            liquidVolumes[ingredientName] += amount;
+        }
+    }
+
+    public void CheckGlassContents()
     {
         DrinkRecipe recipe = CurrentRecipe;
         bool allCorrect = true;
@@ -49,18 +67,38 @@ public class GameDirector : MonoBehaviour
 
         foreach (var ingredient in recipe.ingredients)
         {
-            actualVolumes.TryGetValue(ingredient.ingredientName.ToLower(), out float actualVolume);
-            roundedVolumes = Mathf.Round(actualVolume * 10.0f) *0.1f; // Round to 1 decimal 
-            float difference = Mathf.Abs(roundedVolumes - ingredient.amountRequired);
-
-            if (difference > 0.3f)
+            if (ingredient.isSolid)
             {
-                feedback += $"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume:F2}\n";
-                allCorrect = false;
+                // Controleer vaste ingrediënten
+                solidCounts.TryGetValue(ingredient.ingredientName.ToLower(), out int actualCount);
+                int requiredCount = (int)ingredient.amountRequired; // Voor vaste ingrediënten is amountRequired het benodigde aantal
+
+                if (actualCount != requiredCount)
+                {
+                    feedback += $"❌ {ingredient.ingredientName}: verwacht {requiredCount}x, gekregen {actualCount}x\n";
+                    allCorrect = false;
+                }
+                else
+                {
+                    feedback += $"✅ {ingredient.ingredientName}: correct ({actualCount}x)\n";
+                }
             }
             else
             {
-                feedback += $"✅ {ingredient.ingredientName}: correct ({actualVolume:F2})\n";
+                // Controleer vloeibare ingrediënten
+                liquidVolumes.TryGetValue(ingredient.ingredientName.ToLower(), out float actualVolume);
+                float roundedVolume = Mathf.Round(actualVolume * 10.0f) * 0.1f; // Round to 1 decimal 
+                float difference = Mathf.Abs(roundedVolume - ingredient.amountRequired);
+
+                if (difference > 0.3f)
+                {
+                    feedback += $"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume:F2}\n";
+                    allCorrect = false;
+                }
+                else
+                {
+                    feedback += $"✅ {ingredient.ingredientName}: correct ({actualVolume:F2})\n";
+                }
             }
         }
 
@@ -77,10 +115,24 @@ public class GameDirector : MonoBehaviour
         feedbackText.text = feedback;
     }
 
+    public Dictionary<string, float> GetLiquidVolumes()
+    {
+        return new Dictionary<string, float>(liquidVolumes);
+    }
+
+    public Dictionary<string, int> GetSolidCounts()
+    {
+        return new Dictionary<string, int>(solidCounts);
+    }
+
     public void GoToNextRecipe()
     {
         currentRecipeIndex++;
         if (currentRecipeIndex >= recipes.Count)
             currentRecipeIndex = 0;
+
+        // Reset de ingredienten voor het volgende recept
+        liquidVolumes.Clear();
+        solidCounts.Clear();
     }
 }

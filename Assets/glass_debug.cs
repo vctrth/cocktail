@@ -1,28 +1,32 @@
 using TMPro;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class glass_debug : MonoBehaviour
 {
     public TextMeshPro textMesh;
-    public GameObject glass;
 
     void Update()
     {
-        var glassFill = glass.GetComponent<glass_fill>();
-        Dictionary<string, float> volumes = glassFill.ingredientVolumes;
+        if (GameDirector.Instance == null) return;
 
-        float total = 0f;
-        string debugText = "";
+        string debugText = "Inhoud glas:\n\n";
 
-        foreach (KeyValuePair<string, float> entry in volumes)
+        // Toon vloeibare ingrediënten
+        debugText += "Vloeistoffen:\n";
+        float liquidTotal = 0f;
+        foreach (var entry in GameDirector.Instance.GetLiquidVolumes())
         {
-            float rounded = Mathf.RoundToInt(entry.Value);
-            debugText += $"{entry.Key}: {entry.Value}L\n";
-            total += entry.Value;
+            debugText += $"- {entry.Key}: {entry.Value:F2}L\n";
+            liquidTotal += entry.Value;
         }
+        debugText += $"Totaal vloeistof: {liquidTotal:F2}L\n\n";
 
-        debugText += $"Totaal: {Mathf.RoundToInt(total)}L";
+        // Toon vaste ingrediënten
+        debugText += "Vaste ingrediënten:\n";
+        foreach (var entry in GameDirector.Instance.GetSolidCounts())
+        {
+            debugText += $"- {entry.Key}: {entry.Value}x\n";
+        }
 
         textMesh.text = debugText;
     }

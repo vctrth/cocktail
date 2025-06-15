@@ -13,7 +13,7 @@ public class glass_submit : MonoBehaviour
     {
         if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)) // A-knop
         {
-            GameDirector.Instance.CheckGlassContents(fill.ingredientVolumes);
+            GameDirector.Instance.CheckGlassContents();
         }
     }
 }
