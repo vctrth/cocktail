@@ -18,7 +18,7 @@ public class glass_debug : MonoBehaviour
         foreach (KeyValuePair<string, float> entry in volumes)
         {
             float rounded = Mathf.RoundToInt(entry.Value);
-            debugText += $"{entry.Key}: {rounded}L\n";
+            debugText += $"{entry.Key}: {entry.Value}L\n";
             total += entry.Value;
         }
 
