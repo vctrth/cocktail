@@ -16,7 +16,7 @@ public class PourTrigger : MonoBehaviour
         if (angle > 180) angle -= 360;
 
         // Begin schenken als de fles genoeg gekanteld is
-        if (angle < 0)
+        if (angle > 0)
         {
             if (!pourEffect.isPlaying)
             {
