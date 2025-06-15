@@ -25,6 +25,8 @@ public class GameDirector : MonoBehaviour
     public List<DrinkRecipe> recipes;
     public int currentRecipeIndex = 0;
 
+    private float roundedVolumes = 0.0f; // For rounding the actual volume to 1 decimal place
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -48,9 +50,10 @@ public class GameDirector : MonoBehaviour
         foreach (var ingredient in recipe.ingredients)
         {
             actualVolumes.TryGetValue(ingredient.ingredientName.ToLower(), out float actualVolume);
-            float difference = Mathf.Abs(actualVolume - ingredient.amountRequired);
+            roundedVolumes = Mathf.Round(actualVolume * 10.0f) *0.1f; // Round to 1 decimal 
+            float difference = Mathf.Abs(roundedVolumes - ingredient.amountRequired);
 
-            if (difference > 0.1f)
+            if (difference > 0.3f)
             {
                 feedback += $"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume:F2}\n";
                 allCorrect = false;
