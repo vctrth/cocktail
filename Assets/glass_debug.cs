@@ -1,19 +1,29 @@
 using TMPro;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class glass_debug : MonoBehaviour
 {
     public TextMeshPro textMesh;
     public GameObject glass;
-    private float currentSprite = 0.0f;
-    private float currentBruis = 0.0f;
 
     void Update()
     {
-        currentSprite = glass.GetComponent<glass_fill>().spriteVolume;
-        currentBruis = glass.GetComponent<glass_fill>().bruisVolume;
-        textMesh.text = "Sprite: " + Mathf.RoundToInt(currentSprite) + "L\n" +
-                      "Bruis: " + Mathf.RoundToInt(currentBruis) + "L\n" +
-                      "Totaal: " + Mathf.RoundToInt(currentSprite + currentBruis) + "L";
+        var glassFill = glass.GetComponent<glass_fill>();
+        Dictionary<string, float> volumes = glassFill.ingredientVolumes;
+
+        float total = 0f;
+        string debugText = "";
+
+        foreach (KeyValuePair<string, float> entry in volumes)
+        {
+            float rounded = Mathf.RoundToInt(entry.Value);
+            debugText += $"{entry.Key}: {rounded}L\n";
+            total += entry.Value;
+        }
+
+        debugText += $"Totaal: {Mathf.RoundToInt(total)}L";
+
+        textMesh.text = debugText;
     }
 }
