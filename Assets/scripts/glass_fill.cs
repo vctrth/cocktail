@@ -1,44 +1,53 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class glass_fill : MonoBehaviour
 {
-    public Transform liquidMesh;
+    public Transform liquidMesh; // Het meshje dat stijgt
     public float fillSpeed = 0.1f;
-    private float currentFill = 0f;
     public float maxFill = 5.0f;
+    private bool hasSubmitted = false;
 
-    public float spriteVolume = 0.0f;
-    public float bruisVolume = 0.0f;
 
-    private bool alreadyChecked = false;
+    public Dictionary<string, float> ingredientVolumes = new Dictionary<string, float>();
+    private float currentFill = 0f;
 
     void OnParticleCollision(GameObject other)
     {
-        if (currentFill >= maxFill || alreadyChecked)
-            return;
+        if (!other.CompareTag("Liquid") || currentFill >= maxFill || hasSubmitted) return;
 
-        if (other.CompareTag("Liquid"))
+        string tag = other.name.ToLower();
+        float added = fillSpeed * Time.deltaTime;
+
+        if (!ingredientVolumes.ContainsKey(tag))
+            ingredientVolumes[tag] = 0f;
+
+        ingredientVolumes[tag] += added;
+        currentFill += added;
+
+        UpdateLiquidLevel();
+
+
+        if (currentFill >= maxFill)
         {
-            string ingredientTag = other.tag.ToLower();
-            float added = fillSpeed * Time.deltaTime;
-
-            GameDirector.Instance.AddIngredient(ingredientTag, added);
-            currentFill += added;
-
-            UpdateLiquidLevel();
-
-            if (currentFill >= maxFill)
-            {
-                alreadyChecked = true;
-                GameDirector.Instance.CheckGlassContents(GameDirector.Instance.ingredientVolumes);
-            }
+            hasSubmitted = true;
+            GameDirector.Instance.CheckGlassContents(ingredientVolumes);
         }
     }
 
     void UpdateLiquidLevel()
     {
         Vector3 scale = liquidMesh.localScale;
-        scale.y = Mathf.Clamp(currentFill / maxFill, 0f, 1f); // verhouding 0–1
+        //scale.y = Mathf.Clamp(currentFill / maxFill, 0f, 1f); // verhouding 0–1
+        scale.y = Mathf.Clamp(currentFill, 0f, maxFill);
         liquidMesh.localScale = scale;
+    }
+
+    public void ResetGlass()
+    {
+        ingredientVolumes.Clear();
+        currentFill = 0f;
+        hasSubmitted = false;
+        UpdateLiquidLevel();
     }
 }

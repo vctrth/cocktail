@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 [System.Serializable]
 public class IngredientRequirement
@@ -19,10 +20,10 @@ public class GameDirector : MonoBehaviour
 {
     public static GameDirector Instance { get; private set; }
 
+    public TextMeshProUGUI feedbackText;
+
     public List<DrinkRecipe> recipes;
     public int currentRecipeIndex = 0;
-
-    public Dictionary<string, float> ingredientVolumes = new Dictionary<string, float>();
 
     void Awake()
     {
@@ -37,22 +38,12 @@ public class GameDirector : MonoBehaviour
 
     public DrinkRecipe CurrentRecipe => recipes[currentRecipeIndex];
 
-    public void AddIngredient(string tag, float amount)
-    {
-        tag = tag.ToLower();
-
-        if (!ingredientVolumes.ContainsKey(tag))
-            ingredientVolumes[tag] = 0f;
-
-        ingredientVolumes[tag] += amount;
-    }
-
     public void CheckGlassContents(Dictionary<string, float> actualVolumes)
     {
         DrinkRecipe recipe = CurrentRecipe;
         bool allCorrect = true;
 
-        Debug.Log($"🔍 Recept: {recipe.name}");
+        string feedback = $"🔍 Recept: {recipe.name}\n";
 
         foreach (var ingredient in recipe.ingredients)
         {
@@ -61,26 +52,26 @@ public class GameDirector : MonoBehaviour
 
             if (difference > 0.1f)
             {
-                Debug.Log($"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume}");
+                feedback += $"❌ {ingredient.ingredientName}: verwacht {ingredient.amountRequired}, gekregen {actualVolume:F2}\n";
                 allCorrect = false;
             }
             else
             {
-                Debug.Log($"✅ {ingredient.ingredientName}: correct ({actualVolume})");
+                feedback += $"✅ {ingredient.ingredientName}: correct ({actualVolume:F2})\n";
             }
         }
 
         if (allCorrect)
         {
-            Debug.Log("🎉 Juiste drank gemaakt!");
+            feedback += "\n🎉 Juiste drank gemaakt!";
             GoToNextRecipe();
         }
         else
         {
-            Debug.Log("⚠️ Fout recept! Probeer opnieuw.");
+            feedback += "\n⚠️ Fout recept! Probeer opnieuw.";
         }
 
-        ResetIngredients(); // klaar voor volgende poging
+        feedbackText.text = feedback;
     }
 
     public void GoToNextRecipe()
@@ -88,12 +79,5 @@ public class GameDirector : MonoBehaviour
         currentRecipeIndex++;
         if (currentRecipeIndex >= recipes.Count)
             currentRecipeIndex = 0;
-
-        Debug.Log("➡️ Volgend recept: " + CurrentRecipe.name);
-    }
-
-    public void ResetIngredients()
-    {
-        ingredientVolumes.Clear();
     }
 }
