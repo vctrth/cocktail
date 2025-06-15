@@ -1,20 +1,31 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class glass_fill : MonoBehaviour
 {
-    public Transform liquidMesh; // Het meshje dat stijgt
-    public float fillSpeed = 0.1f;
-    public float maxFill = 5.0f;
-    private bool hasSubmitted = false;
+    public Transform liquidMesh;           // Het meshje dat stijgt
+    public float fillSpeed = 0.1f;         // Hoe snel het vult
+    public float maxFill = 5.0f;           // Maximum hoeveelheid vloeistof
 
+    private bool hasSubmitted = false;     // Wordt true na het controleren
+    private float currentFill = 0f;        // Huidige inhoud
 
     public Dictionary<string, float> ingredientVolumes = new Dictionary<string, float>();
-    private float currentFill = 0f;
+
+    void Update()
+    {
+        // Reset met B-knop op rechter controller
+        if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch))
+        {
+            ResetGlass();
+        }
+    }
 
     void OnParticleCollision(GameObject other)
     {
-        if (!other.CompareTag("Liquid") || currentFill >= maxFill || hasSubmitted) return;
+        if (!other.CompareTag("Liquid") || currentFill >= maxFill || hasSubmitted)
+            return;
 
         string tag = other.name.ToLower();
         float added = fillSpeed * Time.deltaTime;
@@ -27,7 +38,6 @@ public class glass_fill : MonoBehaviour
 
         UpdateLiquidLevel();
 
-
         if (currentFill >= maxFill)
         {
             hasSubmitted = true;
@@ -38,8 +48,7 @@ public class glass_fill : MonoBehaviour
     void UpdateLiquidLevel()
     {
         Vector3 scale = liquidMesh.localScale;
-        //scale.y = Mathf.Clamp(currentFill / maxFill, 0f, 1f); // verhouding 0�1
-        scale.y = Mathf.Clamp(currentFill, 0f, maxFill);
+        scale.y = Mathf.Clamp(currentFill, 0f, maxFill); // vloeistof groeit van 0 tot 5
         liquidMesh.localScale = scale;
     }
 
@@ -49,5 +58,6 @@ public class glass_fill : MonoBehaviour
         currentFill = 0f;
         hasSubmitted = false;
         UpdateLiquidLevel();
+        Debug.Log("🧼 Glas gereset via B-knop");
     }
 }
